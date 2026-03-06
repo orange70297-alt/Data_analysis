@@ -24,6 +24,18 @@ PALETTE = {
 
 SEGMENT_ORDER = ["活躍 VIP", "沈睡 VIP", "一般流失", "一般活躍", "潛力新客"]
 
+
+def divider():
+    """兼容舊版 Streamlit 的分隔線。
+
+    - 若有 `st.divider()`（Streamlit 1.20+），則呼叫原生 API
+    - 否則退回使用 `st.markdown('---')`
+    """
+    if hasattr(st, "divider"):
+        st.divider()
+    else:
+        st.markdown("---")
+
 # 路徑：app 在 儀錶板系統上線_streamlit，資料在 02數據分析
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "02數據分析")
@@ -138,7 +150,7 @@ def main():
     # --- KPI 卡片（依全量資料計算，不受客群篩選影響）---
     render_kpi_cards(df_summary)
 
-    st.divider()
+    divider()
 
     # --- 左欄：分組柱狀、組合圖、漏斗 ---
     col_left, col_right = st.columns([3, 2])
@@ -153,10 +165,25 @@ def main():
         render_sleep_vs_lost_bar(df_summary_f)
         st.info("7.5% 客戶貢獻逾 10% 營收，建議優先發券並提高優惠力度。")
 
-    st.divider()
+    divider()
     st.subheader("沈睡 VIP 名單（回歸優惠券優先名單）")
 
-    st.dataframe(df_sleep_display, use_container_width=True, column_config={"CustomerID": st.column_config.NumberColumn(format="%d"), "Recency": "距今天數", "Frequency": "訂單次數", "TotalAmount": st.column_config.NumberColumn("總消費 (£)", format="£%.2f")})
+    # 舊版 Streamlit 沒有 column_config，僅在支援時套用進階欄位設定
+    if hasattr(st, "column_config"):
+        st.dataframe(
+            df_sleep_display,
+            use_container_width=True,
+            column_config={
+                "CustomerID": st.column_config.NumberColumn(format="%d"),
+                "Recency": "距今天數",
+                "Frequency": "訂單次數",
+                "TotalAmount": st.column_config.NumberColumn(
+                    "總消費 (£)", format="£%.2f"
+                ),
+            },
+        )
+    else:
+        st.dataframe(df_sleep_display, use_container_width=True)
 
     csv = df_sleep_display.to_csv(index=False).encode("utf-8-sig")
     st.download_button("下載沈睡 VIP 名單 CSV", data=csv, file_name="sleep_vip_list.csv", mime="text/csv")

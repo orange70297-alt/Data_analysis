@@ -10,7 +10,9 @@ import numpy as np
 from datetime import datetime
 
 # 路徑設定（以專案根目錄為基準）
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+# 本腳本位於：<專案根>/案例A_Online_Retail_RFM/02數據分析/
+# 因此往上兩層即可回到專案根目錄。
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DATA_PATH = os.path.join(ROOT, "資料集", "Online Retail", "online_retail_1.csv")
 OUTPUT_DIR = os.path.dirname(__file__)
 
